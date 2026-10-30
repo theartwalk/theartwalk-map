@@ -47,7 +47,7 @@ export type AppData = {
   shows: Show[];
   walks: Walk[];
   events: ArtEvent[];
-  source: "sheet" | "sample";
+  source: "supabase" | "sheet" | "sample";
   generatedAt: string;
 };
 

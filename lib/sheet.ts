@@ -23,18 +23,18 @@ async function readTab(sheetId: string, tab: string, required: boolean): Promise
 }
 
 const DAY_INDEX: Record<string, number> = { sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6 };
-const list = (s: string) => s.split(",").map(x => x.trim()).filter(Boolean);
-function parseDays(s: string): number[] {
+export const list = (s: string) => s.split(",").map(x => x.trim()).filter(Boolean);
+export function parseDays(s: string): number[] {
   if (!s) return [2, 3, 4, 5, 6, 0];
   if (/daily/i.test(s)) return [0, 1, 2, 3, 4, 5, 6];
   return list(s).map(d => DAY_INDEX[d.slice(0, 3).toLowerCase()]).filter(n => n !== undefined);
 }
-function parseHour(s: string, fallback: number): number {
+export function parseHour(s: string, fallback: number): number {
   const m = s.match(/^(\d{1,2})(?::(\d{2}))?$/);
   if (!m) return fallback;
   return Number(m[1]) + (m[2] ? Number(m[2]) / 60 : 0);
 }
-function parseHoursText(s: string): { days: number[]; from: number; to: number } | null {
+export function parseHoursText(s: string): { days: number[]; from: number; to: number } | null {
   // "Tue–Sun 11:00–19:00", used for a gallery's default_hours
   const m = s.match(/^(.*?)\s+(\d{1,2}:\d{2})\s*[–-]\s*(\d{1,2}:\d{2})$/);
   if (!m) return null;
@@ -47,12 +47,12 @@ function parseHoursText(s: string): { days: number[]; from: number; to: number }
   return { days, from: parseHour(m[2], 11), to: parseHour(m[3], 19) };
 }
 /** Turns a Google Drive share link into a direct image URL; leaves other URLs alone. */
-function photoUrl(s: string): string {
+export function photoUrl(s: string): string {
   if (!s) return "";
   const m = s.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([\w-]+)/);
   return m ? `https://drive.google.com/thumbnail?id=${m[1]}&sz=w1600` : s;
 }
-const normDateTime = (s: string) => s ? s.replace(" ", "T").slice(0, 16) : "";
+export const normDateTime = (s: string) => s ? s.replace(" ", "T").slice(0, 16) : "";
 const yes = (s: string) => /^(y|yes|true|1)$/i.test(s);
 
 function fromSheet(galleries: Row[], exhibitions: Row[], walks: Row[], events: Row[]): AppData {
@@ -87,7 +87,8 @@ function fromSheet(galleries: Row[], exhibitions: Row[], walks: Row[], events: R
   return { shows, walks: walkList, events: eventList, source: "sheet", generatedAt: new Date().toISOString() };
 }
 
-export async function getData(): Promise<AppData> {
+/** Reads the Google Sheet when SHEET_ID is set; otherwise, or on error, the sample data. */
+export async function getSheetData(): Promise<AppData> {
   const id = process.env.SHEET_ID;
   if (!id) return sampleData();
   try {
