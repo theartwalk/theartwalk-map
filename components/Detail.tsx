@@ -7,6 +7,7 @@ import { areaName } from "@/lib/i18n";
 import { fmtDate, fmtTime, hourOf, hoursLabel, parseLocal, weekday } from "@/lib/status";
 import { useApp } from "./context";
 import { Pills } from "./bits";
+import { ShowNotes } from "./Social";
 import { IconBack, IconBookmark, IconCheck, IconPin, IconRoute, IconWhatsApp } from "./icons";
 
 type Rect = { left: number; top: number; width: number; height: number };
@@ -115,6 +116,7 @@ export default function Detail({ show, from, onClosed }: { show: Show | null; fr
           </dl>
           {show.about && <p className="about">{show.about}</p>}
           <Pills show={show} />
+          <ShowNotes showId={show.id} />
           {withShow.length > 0 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {withShow.map(w => <button key={w.id} type="button" className="btn" onClick={() => close(() => startWalk(w.id))}><IconRoute />{lang === "hi" ? w.titleHi : w.title}</button>)}

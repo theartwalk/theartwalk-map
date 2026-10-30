@@ -21,6 +21,7 @@ export type Ctx = {
   openDetail: (s: Show, from: HTMLElement | null) => void;
   startWalk: (id: string) => void;
   toast: (msg: string) => void;
+  openFriends: () => void;
 };
 export const AppCtx = createContext<Ctx | null>(null);
 export function useApp() {

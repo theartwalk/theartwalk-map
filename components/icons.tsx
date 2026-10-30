@@ -13,3 +13,5 @@ export const IconPin = () => <svg {...p}><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5
 export const IconWhatsApp = () => <svg {...p}><path d="M4.5 20l1.3-3.8A8 8 0 1 1 8.6 19L4.5 20Z" /></svg>;
 export const IconRoute = () => <svg {...p}><path d="M6 19c3-2 2-6 6-7s4-5 6-7" /><circle cx="6" cy="19" r="1.6" /><circle cx="18" cy="5" r="1.6" /></svg>;
 export const IconChevron = () => <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" strokeWidth="1.7" /></svg>;
+export const IconFriends = () => <svg {...p}><circle cx="9" cy="8.5" r="3.3" /><path d="M3 19.5c1-3.2 3.3-4.8 6-4.8s5 1.6 6 4.8" /><path d="M15.2 5.6a3.2 3.2 0 0 1 0 6M17 14.9c2 .5 3.3 2 4 4.6" /></svg>;
+export const IconPlus = () => <svg {...p}><path d="M12 5v14M5 12h14" /></svg>;

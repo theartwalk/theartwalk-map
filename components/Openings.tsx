@@ -4,6 +4,7 @@ import { areaName, eventType } from "@/lib/i18n";
 import { dayDiff, fmtDate, fmtTime, hourOf, parseLocal, weekday } from "@/lib/status";
 import { useApp } from "./context";
 import { RouteThumb } from "./bits";
+import { GoingRow } from "./Social";
 
 /** The next seven days of opening nights, talks and walks, grouped by day. */
 export default function Openings({ topInset }: { topInset: number }) {
@@ -50,6 +51,7 @@ export default function Openings({ topInset }: { topInset: number }) {
                   <span className="thumb" style={artStyle(s)} />
                 </button>
               )}
+              <GoingRow eventId={ev.id} />
             </div>
           );
         })}

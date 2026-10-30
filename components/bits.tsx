@@ -56,3 +56,15 @@ export function RouteThumb({ walk, size = 54 }: { walk: WalkPlan; size?: number 
     </svg>
   );
 }
+
+/** A person's round photo, or their first initial on a tinted circle. */
+export function Avatar({ person, size = 40 }: { person: { id?: string; display_name?: string | null; username?: string | null; avatar_url?: string | null } | null; size?: number }) {
+  const name = person?.display_name || person?.username || "?";
+  const url = person?.avatar_url && /^https:\/\//.test(person.avatar_url) ? person.avatar_url : "";
+  const hue = [...(person?.id || name)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
+  return (
+    <span className="av" style={{ width: size, height: size, fontSize: size * 0.42, background: url ? "var(--raise)" : `hsl(${hue} 42% 46%)` }} aria-hidden="true">
+      {url ? <img src={url} alt="" referrerPolicy="no-referrer" loading="lazy" /> : name.replace(/^@/, "")[0]?.toUpperCase()}
+    </span>
+  );
+}

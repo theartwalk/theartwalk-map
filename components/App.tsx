@@ -16,12 +16,19 @@ import Openings from "./Openings";
 import Saved from "./Saved";
 import Search from "./Search";
 import Profile from "./Profile";
+import Friends from "./Friends";
+import { supabaseConfigured } from "@/lib/supabase";
+import { SocialProvider, takeAfterLogin, useSocial } from "@/lib/social";
 import { RouteThumb, SaveButton, ShowRow, Status } from "./bits";
-import { IconBookmark, IconCalendar, IconChevron, IconClose, IconFeed, IconLocate, IconMap, IconPerson, IconSearch } from "./icons";
+import { IconBookmark, IconCalendar, IconChevron, IconClose, IconFeed, IconFriends, IconLocate, IconMap, IconPerson, IconSearch } from "./icons";
 
-type View = "map" | "feed" | "events" | "saved";
+type View = "map" | "feed" | "events" | "saved" | "friends";
 
 export default function App({ data }: { data: AppData }) {
+  return <SocialProvider><MapApp data={data} /></SocialProvider>;
+}
+
+function MapApp({ data }: { data: AppData }) {
   const [lang, setLang] = useLang();
   const [theme, setTheme] = useTheme();
   const [personal, updatePersonal] = usePersonal();
@@ -111,6 +118,9 @@ export default function App({ data }: { data: AppData }) {
     return { ...p, visited };
   }), [updatePersonal, toast, t]);
   const openDetail = useCallback((s: Show, from: HTMLElement | null) => setDetail({ show: s, from }), []);
+  const social = useSocial();
+  const [pendingAdd, setPendingAdd] = useState("");
+  const openFriends = useCallback(() => { setDetail(null); setProfileOpen(false); setView("friends"); }, []);
 
   // Deep links: /?show=<id> and /?walk=<id>
   useEffect(() => {
@@ -118,6 +128,13 @@ export default function App({ data }: { data: AppData }) {
     const sid = q.get("show"), wid = q.get("walk");
     if (sid && byId.has(sid)) setTimeout(() => setDetail({ show: byId.get(sid)!, from: null }), 300);
     else if (wid) setTimeout(() => startWalk(wid), 600);
+    if (!supabaseConfigured) return;
+    // /?add=<username> from a WhatsApp invite, and the return trip from Google sign-in.
+    const back = takeAfterLogin();
+    const add = q.get("add") || (back ? new URLSearchParams(back.split("?")[1] || "").get("add") : null);
+    if (add) setPendingAdd(add);
+    if (add || back) setView("friends");
+    if (q.has("add")) { q.delete("add"); history.replaceState(null, "", `${location.pathname}${q.size ? `?${q}` : ""}`); }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // If a filter hides the selected show, close the sheet.
@@ -154,7 +171,7 @@ export default function App({ data }: { data: AppData }) {
     return null;
   }, [byId, st, t]);
 
-  const ctx: Ctx = { data, t, lang, now, byId, walks, personal, st, dist, distLabel, toggleSave, toggleVisited, openDetail, startWalk, toast };
+  const ctx: Ctx = { data, t, lang, now, byId, walks, personal, st, dist, distLabel, toggleSave, toggleVisited, openDetail, startWalk, toast, openFriends };
 
   const nearby = selected ? visible.filter(s => s.id !== selected.id).sort((a, b) => km(a, selected) - km(b, selected)) : [];
   const sheetHead = walk ? (
@@ -199,8 +216,10 @@ export default function App({ data }: { data: AppData }) {
 
   const tabs: { v: View; label: string; icon: React.ReactNode }[] = [
     { v: "map", label: t.map, icon: <IconMap /> }, { v: "feed", label: t.feed, icon: <IconFeed /> },
-    { v: "events", label: t.events, icon: <IconCalendar /> }, { v: "saved", label: t.saved, icon: <IconBookmark /> }
+    { v: "events", label: t.events, icon: <IconCalendar /> }, { v: "saved", label: t.saved, icon: <IconBookmark /> },
+    ...(supabaseConfigured ? [{ v: "friends" as View, label: t.friends, icon: <IconFriends /> }] : [])
   ];
+  const requestsWaiting = social.incoming.length;
 
   return (
     <AppCtx.Provider value={ctx}>
@@ -233,6 +252,7 @@ export default function App({ data }: { data: AppData }) {
           {view === "feed" && <section className="view" aria-label={t.feed}><Feed shows={visible} topInset={topInset} /></section>}
           {view === "events" && <section className="view" aria-label={t.events}><Openings topInset={topInset} /></section>}
           {view === "saved" && <section className="view" aria-label={t.saved}><Saved topInset={topInset} /></section>}
+          {view === "friends" && <section className="view" aria-label={t.friends}><Friends topInset={topInset} pendingAdd={pendingAdd} clearPendingAdd={() => setPendingAdd("")} /></section>}
 
           <div ref={topRef} className="top">
             <div className="row">
@@ -255,9 +275,9 @@ export default function App({ data }: { data: AppData }) {
           </div>
         </div>
 
-        <nav className="tabbar" role="tablist" aria-label="Sections">
+        <nav className="tabbar" role="tablist" aria-label="Sections" style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}>
           {tabs.map(x => (
-            <button key={x.v} type="button" className="tab" role="tab" aria-selected={view === x.v} onClick={() => setView(x.v)}>{x.icon}{x.label}</button>
+            <button key={x.v} type="button" className="tab" role="tab" aria-selected={view === x.v} onClick={() => setView(x.v)}>{x.icon}{x.label}{x.v === "friends" && requestsWaiting > 0 && <span className="dot" aria-label={t.requests} />}</button>
           ))}
         </nav>
 

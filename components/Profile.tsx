@@ -7,6 +7,8 @@ import type { Personal, Theme } from "@/lib/store";
 import { useApp } from "./context";
 import { siteUrl } from "./Detail";
 import { IconClose } from "./icons";
+import { Avatar } from "./bits";
+import { personName, useSocial } from "@/lib/social";
 
 const COMMUNITY = process.env.NEXT_PUBLIC_WHATSAPP_COMMUNITY_URL || "";
 const SUBMIT_NUMBER = process.env.NEXT_PUBLIC_SUBMIT_WHATSAPP || "919654256673";
@@ -20,7 +22,10 @@ type Props = {
 
 /** A taste profile built from saves and visits, kept on the device. No account, no Premium. */
 export default function Profile({ onClose, theme, setTheme, setLang, updatePersonal }: Props) {
-  const { t, lang, personal, byId, toast, openDetail } = useApp();
+  const { t, lang, personal, byId, toast, openDetail, openFriends } = useApp();
+  const social = useSocial();
+  const [delArmed, setDelArmed] = useState(false);
+  useEffect(() => { if (!delArmed) return; const id = setTimeout(() => setDelArmed(false), 4000); return () => clearTimeout(id); }, [delArmed]);
   const el = useRef<HTMLDivElement>(null);
   const y = useRef(spring(typeof window !== "undefined" ? window.innerHeight : 800));
   const [armed, setArmed] = useState(false);
@@ -81,6 +86,32 @@ export default function Profile({ onClose, theme, setTheme, setLang, updatePerso
             <a className="btn primary" style={{ width: "100%" }} href={shareUrl} target="_blank" rel="noopener noreferrer">{t.shareBtn}</a>
           </section>
 
+          {social.enabled && social.ready && (
+            <section className="p-card"><h3>{t.account}</h3>
+              {social.session ? (
+                <>
+                  <div className="person" style={{ borderBottom: 0, paddingTop: 0 }}>
+                    <Avatar person={social.me ?? { display_name: social.session.user.email ?? "" }} size={44} />
+                    <span className="who"><b>{social.me ? personName(social.me) : social.session.user.email}</b>{social.me?.username && <small>@{social.me.username}</small>}</span>
+                  </div>
+                  <button type="button" className="link-row" onClick={() => { close(); setTimeout(openFriends, 380); }}>
+                    <span>{social.needsSetup ? t.finishSetup : t.friends}<small>{social.needsSetup ? "" : `${social.friends.length}${social.incoming.length ? ` · ${t.requests} ${social.incoming.length}` : ""}`}</small></span><span aria-hidden="true">›</span>
+                  </button>
+                  <button type="button" className="link-row" onClick={async () => { await social.signOut(); toast(t.tSignedOut); }}><span>{t.signOut}</span></button>
+                  <button type="button" className="link-row danger" onClick={async () => {
+                    if (!delArmed) { setDelArmed(true); return; }
+                    setDelArmed(false); const ok = await social.deleteAccount(); toast(ok ? t.tDeleted : t.tError);
+                  }}><span>{delArmed ? t.deleteConfirm : t.deleteAccount}</span></button>
+                </>
+              ) : (
+                <>
+                  <p className="p-empty" style={{ marginBottom: 12 }}>{t.signInP}</p>
+                  <button type="button" className="btn primary" style={{ width: "100%" }} onClick={social.signIn}>{t.google}</button>
+                </>
+              )}
+            </section>
+          )}
+
           <section className="p-card"><h3>{t.settings}</h3>
             <div className="set">
               <div className="set-row"><span>{t.language}</span><div className="segs">
@@ -108,7 +139,7 @@ export default function Profile({ onClose, theme, setTheme, setLang, updatePerso
               }}><span>{armed ? t.clearConfirm : t.clear}</span></button>
             </div>
           </section>
-          <p className="p-note">{t.localNote}</p>
+          <p className="p-note">{social.enabled ? t.socialNote : t.localNote} {social.enabled && <a href="/privacy">{t.privacy}</a>}</p>
         </div>
       </div>
     </div>
