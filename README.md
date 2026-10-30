@@ -2,7 +2,7 @@
 
 A map of Delhi's art exhibitions, with curated gallery walks, this week's openings, a saved list and a visit diary. Built for phones first, in English and Hindi, light and dark.
 
-It runs on built-in sample data until you connect the master Google Sheet. The sample galleries, shows and artists are invented and labelled as sample data in the app.
+Shows come from Supabase when it's connected, otherwise from the master Google Sheet, otherwise from built-in sample data. The sample galleries, shows and artists are invented and labelled as sample data in the app.
 
 ## What's in it
 
@@ -14,7 +14,10 @@ It runs on built-in sample data until you connect the master Google Sheet. The s
 | Feed | Full-screen cards, one show per screen |
 | Openings | Opening nights, talks and walks over the next seven days |
 | Saved | "Want to see" list and a dated visit diary, kept on the device |
-| Profile | Taste snapshot from saves and visits, a WhatsApp share card, language and appearance settings. No account, no Premium |
+| Profile | Taste snapshot from saves and visits, a WhatsApp share card, language and appearance settings, and the account (sign in, sign out, delete). No Premium |
+| Friends | Optional Google sign-in. Friend requests that must be accepted, a feed of friends' notes and the openings they're going to, search by name or username, WhatsApp invites (`/?add=<username>`) |
+| Notes and Going | One note per show (up to 280 characters) and a Going button on each opening. Visible only to you and your friends |
+| `/privacy` | Plain-language privacy notice, linked from sign-in and the profile |
 | `/shows/<id>` | A server-rendered page per show, so WhatsApp links get a proper preview |
 
 ## Run it on your computer
@@ -28,6 +31,27 @@ npm run dev
 ```
 
 Then open http://localhost:3000. Test on your phone by opening your computer's local network address on the same Wi-Fi.
+
+## Connect Supabase (shows and Friends)
+
+1. In the Supabase dashboard, open **SQL Editor → New query**, paste all of `supabase/01_friends.sql` and click **Run**. It only adds tables and columns, so the older app and admin keep working.
+2. Turn on Google sign-in: **Authentication → Sign In / Providers → Google**, and paste the Client ID and Client secret from a Google Cloud OAuth client (type "Web application") whose authorised redirect URI is `https://<project>.supabase.co/auth/v1/callback`.
+3. **Authentication → URL Configuration**: set Site URL to the live address and add every address people use (for example `https://theartwalk.in/**`, `https://theartwalk-map.vercel.app/**`, `http://localhost:3000/**`) under Redirect URLs.
+4. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Project Settings → API).
+
+How rows in `events` become shows on the map:
+
+| Map field | From `events` (fallback) |
+| --- | --- |
+| Gallery and place | `venue`, matched by name to `galleries` for `lat`/`lng`; else `events.lat`/`lng`; else the centre of the `area` |
+| Dates | `date` to `end_date` (`YYYY-MM-DD` or a readable date) |
+| Opening night | `opening_at`, or `date` + `time` when `type` mentions "Opening" |
+| Hours | `open_days`/`open_from`/`open_to`, else `regular_hours` or the gallery's `default_hours` such as `Tue–Sun 11:00–19:00` |
+| Mediums | `mediums`, else any `tags` that match the medium list |
+| Photos | `image_url`, then `photos` |
+| Entry, about, artists | `price`, `description`, `artists` |
+
+Rows with `show_on_map` = false are left off. Walks go in the `walks` table: `id`, `title`, `title_hi`, `stops` (event ids in order).
 
 ## Connect the Google Sheet
 
@@ -63,7 +87,8 @@ Rules the site follows:
 
 | Variable | What it does |
 | --- | --- |
-| `SHEET_ID` | The master Google Sheet. Empty means sample data |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | The Supabase project. Turns on Friends and reads shows from Supabase |
+| `SHEET_ID` | The master Google Sheet, used when Supabase isn't set. Empty means sample data |
 | `NEXT_PUBLIC_SITE_URL` | Public address used in share links |
 | `NEXT_PUBLIC_WHATSAPP_COMMUNITY_URL` | Invite link shown in the profile |
 | `NEXT_PUBLIC_SUBMIT_WHATSAPP` | Number galleries message to list a show (country code, no +) |
@@ -73,15 +98,16 @@ Rules the site follows:
 
 - **Next.js 16** (App Router) with **React 19** and TypeScript.
 - **MapLibre GL JS 6** with free **OpenFreeMap** tiles: no API key, no usage bill. The map's web worker is copied to `public/maplibre/` before every `dev` and `build` by `scripts/copy-maplibre-worker.mjs`.
-- No database yet. Saved shows, the diary, name, language and theme live in the browser's local storage.
+- Saved shows, the diary, name, language and theme live in the browser's local storage. Accounts, friendships, notes and going marks live in Supabase, protected by row-level security rules in `supabase/01_friends.sql`: notes and going marks are readable only by their author and accepted friends.
 - Motion uses small spring helpers in `lib/spring.ts` (damping ratio and response, interruptible, velocity-aware), following Apple's fluid interface guidance. Reduced-motion settings are respected.
 - Design tokens (colours, fonts, spacing) are at the top of `app/globals.css`. Change them there.
 
 | Folder | Contents |
 | --- | --- |
 | `app/` | Routes, global styles, PWA manifest and icon |
-| `components/` | Map, sheet, detail, feed, openings, saved, search, profile |
-| `lib/` | Sheet loader, status and hours logic, Hindi and English text, springs, stand-in artwork |
+| `components/` | Map, sheet, detail, feed, openings, saved, search, profile, friends, notes and going |
+| `lib/` | Data loaders (`data.ts` for Supabase, `sheet.ts`), accounts and friends (`social.tsx`), status and hours logic, Hindi and English text, springs, stand-in artwork |
+| `supabase/` | SQL to run once in the Supabase SQL Editor |
 | `data/sample.ts` | Invented sample data used without a sheet |
 
 Map data © OpenStreetMap contributors, tiles by OpenFreeMap.
