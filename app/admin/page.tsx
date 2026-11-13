@@ -53,68 +53,200 @@ const blankWalk = (): Walk => ({
   id: "", title: "", title_hi: "", stops: [], published: true,
 });
 
-// ── Styles ─────────────────────────────────────────────────────────────────
-const C = {
-  gold: "#c8a96a", bg: "#0f0f0f", bg2: "#1a1a1a", bg3: "#111",
-  border: "#2a2a2a", text: "#f0f0f0", muted: "#666", danger: "#e74c3c",
-};
 const css = (obj: CSSProperties): CSSProperties => obj;
 
-const S = {
-  page: css({ minHeight: "100vh", background: C.bg, color: C.text, fontFamily: "system-ui,sans-serif" }),
-  header: css({ background: C.bg2, borderBottom: `1px solid ${C.border}`, padding: "16px 24px", display: "flex", alignItems: "center", gap: 12 }),
-  logo: css({ fontSize: 20, fontWeight: 800, letterSpacing: 1, color: C.gold }),
-  badge: css({ fontSize: 10, background: "#c8a96a22", color: C.gold, border: "1px solid #c8a96a44", borderRadius: 4, padding: "2px 8px", letterSpacing: 1 }),
-  tabs: css({ display: "flex", borderBottom: `1px solid ${C.border}`, background: "#161616", padding: "0 24px" }),
-  body: css({ padding: 24, maxWidth: 900, margin: "0 auto" }),
-  row: css({ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }),
-  h2: css({ fontSize: 18, fontWeight: 700, margin: 0 }),
-  table: css({ width: "100%", borderCollapse: "collapse", fontSize: 13 }),
-  th: css({ textAlign: "left", padding: "10px 12px", background: C.bg2, color: C.muted, fontWeight: 600, letterSpacing: 0.5, fontSize: 11, borderBottom: `1px solid ${C.border}` }),
-  td: css({ padding: "10px 12px", borderBottom: "1px solid #1e1e1e", verticalAlign: "top" }),
-  form: css({ background: C.bg2, borderRadius: 10, padding: 20, marginBottom: 24, border: `1px solid ${C.border}` }),
-  formTitle: css({ fontSize: 15, fontWeight: 700, marginBottom: 16, color: C.gold }),
-  grid2: css({ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }),
-  field: css({ marginBottom: 12 }),
-  label: css({ display: "block", fontSize: 11, color: "#888", marginBottom: 4, letterSpacing: 0.5 }),
-  input: css({ width: "100%", padding: "8px 10px", background: C.bg3, border: `1px solid #333`, borderRadius: 6, color: C.text, fontSize: 13, boxSizing: "border-box" }),
-  textarea: css({ width: "100%", padding: "8px 10px", background: C.bg3, border: `1px solid #333`, borderRadius: 6, color: C.text, fontSize: 13, boxSizing: "border-box", minHeight: 80, resize: "vertical" }),
-  formRow: css({ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 16 }),
-  loginBox: css({ maxWidth: 360, margin: "120px auto", background: C.bg2, borderRadius: 12, padding: 32, border: `1px solid ${C.border}`, textAlign: "center" }),
-  err: css({ color: C.danger, fontSize: 12, marginTop: 8 }),
+// ── Apple-inspired design tokens ──────────────────────────────────────────
+const T = {
+  gold: "#c8a96a",
+  bg: "#000",
+  surface: "rgba(28,28,30,0.95)",
+  surfaceHigh: "rgba(44,44,46,0.9)",
+  surfaceInput: "rgba(58,58,60,0.8)",
+  border: "rgba(255,255,255,0.08)",
+  borderStrong: "rgba(255,255,255,0.14)",
+  text: "#ffffff",
+  textSecondary: "rgba(255,255,255,0.55)",
+  textTertiary: "rgba(255,255,255,0.3)",
+  separator: "rgba(255,255,255,0.08)",
+  red: "#ff453a",
+  green: "#30d158",
+  blur: "blur(24px) saturate(180%)",
 };
 
-const btn = (variant: "primary" | "ghost" | "danger"): CSSProperties => ({
-  padding: "8px 16px", borderRadius: 6, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600,
-  ...(variant === "primary" ? { background: C.gold, color: "#000" } :
-      variant === "danger"  ? { background: "#c0392b22", color: C.danger, border: "1px solid #e74c3c44" } :
-                              { background: "#2a2a2a", color: "#aaa" }),
+// ── Shared styles ──────────────────────────────────────────────────────────
+const baseInput = css({
+  width: "100%",
+  padding: "11px 14px",
+  background: T.surfaceInput,
+  border: `1px solid ${T.border}`,
+  borderRadius: 10,
+  color: T.text,
+  fontSize: 15,
+  fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif",
+  boxSizing: "border-box",
+  outline: "none",
+  letterSpacing: "-0.01em",
+  WebkitAppearance: "none",
 });
-const tabStyle = (active: boolean): CSSProperties => ({
-  padding: "12px 20px", cursor: "pointer", fontSize: 13, fontWeight: 600,
-  letterSpacing: 0.5, border: "none", background: "none",
-  color: active ? C.gold : C.muted,
-  borderBottom: active ? `2px solid ${C.gold}` : "2px solid transparent",
+
+const baseTextarea = css({
+  ...baseInput,
+  minHeight: 88,
+  resize: "vertical",
+  lineHeight: 1.5,
 });
-const pubBadge = (pub: boolean): CSSProperties => ({
-  display: "inline-block", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600,
-  background: pub ? "#c8a96a22" : "#2a2a2a",
-  color: pub ? C.gold : "#555",
-});
+
+function AppleInput({ label, ...props }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <div style={{ marginBottom: 1 }}>
+      <input
+        {...props}
+        placeholder={label}
+        style={{
+          ...baseInput,
+          borderRadius: 0,
+          border: "none",
+          borderBottom: `1px solid ${T.separator}`,
+          background: "transparent",
+          ...props.style,
+        }}
+      />
+    </div>
+  );
+}
+
+function FieldGroup({ children, label }: { children: React.ReactNode; label?: string }) {
+  return (
+    <div style={{ marginBottom: 24 }}>
+      {label && (
+        <div style={{ fontSize: 12, fontWeight: 600, color: T.textSecondary, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 8, paddingLeft: 4 }}>
+          {label}
+        </div>
+      )}
+      <div style={{ background: T.surfaceHigh, borderRadius: 12, border: `1px solid ${T.border}`, overflow: "hidden" }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, value, onChange, type = "text", placeholder }: {
+  label: string; value: string | number; onChange: (v: string) => void;
+  type?: string; placeholder?: string;
+}) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", padding: "0 16px", borderBottom: `1px solid ${T.separator}`, minHeight: 44 }}>
+      <label style={{ fontSize: 15, color: T.textSecondary, minWidth: 110, letterSpacing: "-0.01em", flexShrink: 0 }}>{label}</label>
+      <input
+        type={type}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder ?? label}
+        style={{
+          flex: 1, border: "none", background: "transparent",
+          color: T.text, fontSize: 15, fontFamily: "inherit",
+          letterSpacing: "-0.01em", textAlign: "right", outline: "none",
+          padding: "11px 0",
+        }}
+      />
+    </div>
+  );
+}
+
+function TextAreaField({ label, value, onChange, placeholder }: {
+  label: string; value: string; onChange: (v: string) => void; placeholder?: string;
+}) {
+  return (
+    <div style={{ padding: "12px 16px", borderBottom: `1px solid ${T.separator}` }}>
+      <label style={{ display: "block", fontSize: 12, color: T.textSecondary, letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 6 }}>{label}</label>
+      <textarea
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        style={{
+          width: "100%", border: "none", background: "transparent",
+          color: T.text, fontSize: 15, fontFamily: "inherit",
+          letterSpacing: "-0.01em", outline: "none", resize: "vertical",
+          minHeight: 72, lineHeight: 1.5, boxSizing: "border-box",
+        }}
+      />
+    </div>
+  );
+}
+
+function AppleButton({ children, variant = "primary", onClick, style }: {
+  children: React.ReactNode; variant?: "primary" | "ghost" | "danger" | "tinted";
+  onClick?: () => void; style?: CSSProperties;
+}) {
+  const [pressed, setPressed] = useState(false);
+  const styles: Record<string, CSSProperties> = {
+    primary: { background: T.gold, color: "#000", fontWeight: 600 },
+    ghost: { background: T.surfaceHigh, color: T.text, border: `1px solid ${T.border}` },
+    danger: { background: "rgba(255,69,58,0.15)", color: T.red, border: `1px solid rgba(255,69,58,0.25)` },
+    tinted: { background: "rgba(200,169,106,0.15)", color: T.gold, border: `1px solid rgba(200,169,106,0.25)` },
+  };
+  return (
+    <button
+      onClick={onClick}
+      onMouseDown={() => setPressed(true)}
+      onMouseUp={() => setPressed(false)}
+      onMouseLeave={() => setPressed(false)}
+      style={{
+        padding: "9px 18px", borderRadius: 10, border: "none", cursor: "pointer",
+        fontSize: 15, fontFamily: "inherit", letterSpacing: "-0.01em",
+        transform: pressed ? "scale(0.97)" : "scale(1)",
+        transition: "transform 100ms ease-out, opacity 100ms ease-out",
+        ...styles[variant],
+        ...style,
+      }}
+    >
+      {children}
+    </button>
+  );
+}
 
 // ── Login ──────────────────────────────────────────────────────────────────
 function Login({ onLogin }: { onLogin: () => void }) {
-  const [pw, setPw] = useState(""); const [err, setErr] = useState("");
-  const submit = () => pw === ADMIN_PASSWORD ? onLogin() : setErr("Incorrect password");
+  const [pw, setPw] = useState("");
+  const [err, setErr] = useState("");
+  const [shake, setShake] = useState(false);
+  const submit = () => {
+    if (pw === ADMIN_PASSWORD) { onLogin(); }
+    else { setErr("Incorrect password"); setShake(true); setTimeout(() => setShake(false), 500); }
+  };
   return (
-    <div style={S.page}>
-      <div style={S.loginBox}>
-        <div style={{ fontSize: 22, fontWeight: 800, color: C.gold, marginBottom: 8 }}>THE ART WALK</div>
-        <div style={{ fontSize: 13, color: C.muted, marginBottom: 24 }}>Admin · Map</div>
-        <input style={{ ...S.input, marginBottom: 12 }} type="password" placeholder="Password"
-          value={pw} onChange={e => setPw(e.target.value)} onKeyDown={e => e.key === "Enter" && submit()} />
-        {err && <div style={S.err}>{err}</div>}
-        <button style={{ ...btn("primary"), width: "100%", marginTop: 12 }} onClick={submit}>ENTER</button>
+    <div style={{ minHeight: "100vh", background: T.bg, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif" }}>
+      <style>{`
+        @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(6px)} }
+        input::placeholder { color: rgba(255,255,255,0.3); }
+        input[type=password]::-ms-reveal { display: none; }
+      `}</style>
+      <div style={{
+        width: 340, background: T.surface,
+        backdropFilter: T.blur, WebkitBackdropFilter: T.blur,
+        borderRadius: 20, border: `1px solid ${T.borderStrong}`,
+        padding: "36px 28px",
+        animation: shake ? "shake 0.4s ease" : "none",
+        boxShadow: "0 24px 64px rgba(0,0,0,0.6)",
+      }}>
+        <div style={{ textAlign: "center", marginBottom: 28 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.14em", color: T.textSecondary, textTransform: "uppercase", marginBottom: 6 }}>The Art Walk</div>
+          <div style={{ fontSize: 28, fontWeight: 700, color: T.text, letterSpacing: "-0.03em" }}>Admin</div>
+        </div>
+        <input
+          type="password" placeholder="Password" value={pw}
+          onChange={e => { setPw(e.target.value); setErr(""); }}
+          onKeyDown={e => e.key === "Enter" && submit()}
+          style={{
+            ...baseInput, marginBottom: 12,
+            textAlign: "center",
+            background: "rgba(255,255,255,0.07)",
+          }}
+        />
+        {err && <div style={{ textAlign: "center", color: T.red, fontSize: 13, marginBottom: 12 }}>{err}</div>}
+        <AppleButton onClick={submit} style={{ width: "100%", padding: "13px 0", fontSize: 16, borderRadius: 12 }}>
+          Continue
+        </AppleButton>
       </div>
     </div>
   );
@@ -123,31 +255,31 @@ function Login({ onLogin }: { onLogin: () => void }) {
 // ── Gallery form ───────────────────────────────────────────────────────────
 function GalleryForm({ initial, onSave, onCancel }: { initial: Gallery; onSave: (g: Gallery) => void; onCancel: () => void }) {
   const [g, setG] = useState(initial);
-  const f = (k: keyof Gallery) => (e: React.ChangeEvent<HTMLInputElement>) => setG(p => ({ ...p, [k]: e.target.value }));
+  const f = (k: keyof Gallery) => (v: string) => setG(p => ({ ...p, [k]: v }));
   const save = () => {
     if (!g.name || !g.area || !g.address) return alert("Name, area and address required");
     onSave({ ...g, id: g.id || slug(g.name), lat: Number(g.lat), lng: Number(g.lng) });
   };
   return (
-    <div style={S.form}>
-      <div style={S.formTitle}>{g.id ? "Edit Gallery" : "Add Gallery"}</div>
-      <div style={S.grid2}>
-        <div><label style={S.label}>NAME *</label><input style={S.input} value={g.name} onChange={f("name")} /></div>
-        <div><label style={S.label}>AREA *</label><input style={S.input} value={g.area} onChange={f("area")} /></div>
-      </div>
-      <div style={S.field}><label style={S.label}>ADDRESS *</label><input style={S.input} value={g.address} onChange={f("address")} /></div>
-      <div style={S.grid2}>
-        <div><label style={S.label}>LATITUDE</label><input style={S.input} type="number" value={g.lat} onChange={f("lat")} /></div>
-        <div><label style={S.label}>LONGITUDE</label><input style={S.input} type="number" value={g.lng} onChange={f("lng")} /></div>
-      </div>
-      <div style={S.grid2}>
-        <div><label style={S.label}>INSTAGRAM</label><input style={S.input} value={g.instagram} onChange={f("instagram")} placeholder="@handle" /></div>
-        <div><label style={S.label}>WEBSITE</label><input style={S.input} value={g.website} onChange={f("website")} /></div>
-      </div>
-      <div style={S.field}><label style={S.label}>DEFAULT HOURS</label><input style={S.input} value={g.default_hours} onChange={f("default_hours")} placeholder="Tue–Sun 11am–6pm" /></div>
-      <div style={S.formRow}>
-        <button style={btn("ghost")} onClick={onCancel}>Cancel</button>
-        <button style={btn("primary")} onClick={save}>Save Gallery</button>
+    <div style={{ background: T.surface, backdropFilter: T.blur, WebkitBackdropFilter: T.blur, borderRadius: 16, border: `1px solid ${T.border}`, padding: 20, marginBottom: 20 }}>
+      <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.02em", marginBottom: 20, color: T.text }}>{g.id ? "Edit Gallery" : "New Gallery"}</div>
+      <FieldGroup label="Gallery Info">
+        <Field label="Name" value={g.name} onChange={f("name")} />
+        <Field label="Area" value={g.area} onChange={f("area")} placeholder="Lodi Colony" />
+        <Field label="Address" value={g.address} onChange={f("address")} placeholder="Full address" />
+      </FieldGroup>
+      <FieldGroup label="Location">
+        <Field label="Latitude" type="number" value={g.lat} onChange={f("lat")} />
+        <Field label="Longitude" type="number" value={g.lng} onChange={f("lng")} />
+      </FieldGroup>
+      <FieldGroup label="Contact">
+        <Field label="Instagram" value={g.instagram} onChange={f("instagram")} placeholder="@handle" />
+        <Field label="Website" value={g.website} onChange={f("website")} placeholder="https://" />
+        <Field label="Hours" value={g.default_hours} onChange={f("default_hours")} placeholder="Tue–Sun 11am–6pm" />
+      </FieldGroup>
+      <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+        <AppleButton variant="ghost" onClick={onCancel}>Cancel</AppleButton>
+        <AppleButton onClick={save}>Save</AppleButton>
       </div>
     </div>
   );
@@ -160,7 +292,7 @@ function ShowForm({ initial, onSave, onCancel }: { initial: Show; onSave: (s: Sh
   const [mediumsStr, setMediumsStr] = useState(initial.mediums.join(", "));
   const [openDaysStr, setOpenDaysStr] = useState(initial.open_days.join(", "));
   const [photosStr, setPhotosStr] = useState(initial.photos.join(", "));
-  const f = (k: keyof Show) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setSh(p => ({ ...p, [k]: e.target.value }));
+  const f = (k: keyof Show) => (v: string) => setSh(p => ({ ...p, [k]: v }));
   const save = () => {
     if (!sh.title || !sh.gallery) return alert("Title and gallery required");
     onSave({
@@ -173,42 +305,42 @@ function ShowForm({ initial, onSave, onCancel }: { initial: Show; onSave: (s: Sh
     });
   };
   return (
-    <div style={S.form}>
-      <div style={S.formTitle}>{sh.id ? "Edit Show" : "Add Show"}</div>
-      <div style={S.grid2}>
-        <div><label style={S.label}>TITLE *</label><input style={S.input} value={sh.title} onChange={f("title")} /></div>
-        <div><label style={S.label}>GALLERY NAME *</label><input style={S.input} value={sh.gallery} onChange={f("gallery")} /></div>
-      </div>
-      <div style={S.grid2}>
-        <div><label style={S.label}>AREA</label><input style={S.input} value={sh.area} onChange={f("area")} /></div>
-        <div><label style={S.label}>INSTAGRAM</label><input style={S.input} value={sh.instagram} onChange={f("instagram")} placeholder="@handle" /></div>
-      </div>
-      <div style={S.field}><label style={S.label}>ADDRESS</label><input style={S.input} value={sh.address} onChange={f("address")} /></div>
-      <div style={S.grid2}>
-        <div><label style={S.label}>LATITUDE</label><input style={S.input} type="number" value={sh.lat} onChange={f("lat")} /></div>
-        <div><label style={S.label}>LONGITUDE</label><input style={S.input} type="number" value={sh.lng} onChange={f("lng")} /></div>
-      </div>
-      <div style={S.field}><label style={S.label}>ARTISTS (comma separated)</label><input style={S.input} value={artistsStr} onChange={e => setArtistsStr(e.target.value)} placeholder="Artist One, Artist Two" /></div>
-      <div style={S.field}><label style={S.label}>MEDIUMS (comma separated)</label><input style={S.input} value={mediumsStr} onChange={e => setMediumsStr(e.target.value)} placeholder="Painting, Photography" /></div>
-      <div style={S.grid2}>
-        <div><label style={S.label}>START DATE</label><input style={S.input} type="date" value={sh.start} onChange={f("start")} /></div>
-        <div><label style={S.label}>END DATE</label><input style={S.input} type="date" value={sh.end} onChange={f("end")} /></div>
-      </div>
-      <div style={S.field}><label style={S.label}>OPENING NIGHT (YYYY-MM-DDThh:mm)</label><input style={S.input} value={sh.opening_at} onChange={f("opening_at")} placeholder="2026-11-20T18:00" /></div>
-      <div style={S.field}><label style={S.label}>OPEN DAYS (e.g. Tue,Wed,Thu,Fri,Sat)</label><input style={S.input} value={openDaysStr} onChange={e => setOpenDaysStr(e.target.value)} /></div>
-      <div style={S.grid2}>
-        <div><label style={S.label}>OPENS AT (e.g. 11)</label><input style={S.input} type="number" value={sh.open_from ?? ""} onChange={f("open_from")} /></div>
-        <div><label style={S.label}>CLOSES AT (e.g. 18.5)</label><input style={S.input} type="number" value={sh.open_to ?? ""} onChange={f("open_to")} /></div>
-      </div>
-      <div style={S.grid2}>
-        <div><label style={S.label}>ENTRY</label><input style={S.input} value={sh.entry} onChange={f("entry")} placeholder="Free / ₹200" /></div>
-        <div><label style={S.label}>PHOTO CREDIT</label><input style={S.input} value={sh.photo_credit} onChange={f("photo_credit")} /></div>
-      </div>
-      <div style={S.field}><label style={S.label}>ABOUT</label><textarea style={S.textarea} value={sh.about} onChange={f("about")} /></div>
-      <div style={S.field}><label style={S.label}>PHOTO URLS (comma separated)</label><textarea style={{ ...S.textarea, minHeight: 60 }} value={photosStr} onChange={e => setPhotosStr(e.target.value)} /></div>
-      <div style={S.formRow}>
-        <button style={btn("ghost")} onClick={onCancel}>Cancel</button>
-        <button style={btn("primary")} onClick={save}>Save Show</button>
+    <div style={{ background: T.surface, backdropFilter: T.blur, WebkitBackdropFilter: T.blur, borderRadius: 16, border: `1px solid ${T.border}`, padding: 20, marginBottom: 20 }}>
+      <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.02em", marginBottom: 20, color: T.text }}>{sh.id ? "Edit Show" : "New Show"}</div>
+      <FieldGroup label="Exhibition">
+        <Field label="Title" value={sh.title} onChange={f("title")} />
+        <Field label="Gallery" value={sh.gallery} onChange={f("gallery")} />
+        <Field label="Area" value={sh.area} onChange={f("area")} placeholder="Hauz Khas Village" />
+        <Field label="Instagram" value={sh.instagram} onChange={f("instagram")} placeholder="@gallery" />
+      </FieldGroup>
+      <FieldGroup label="Location">
+        <Field label="Address" value={sh.address} onChange={f("address")} />
+        <Field label="Latitude" type="number" value={sh.lat} onChange={f("lat")} />
+        <Field label="Longitude" type="number" value={sh.lng} onChange={f("lng")} />
+      </FieldGroup>
+      <FieldGroup label="Artists & Medium">
+        <Field label="Artists" value={artistsStr} onChange={setArtistsStr} placeholder="One, Two, Three" />
+        <Field label="Mediums" value={mediumsStr} onChange={setMediumsStr} placeholder="Painting, Photography" />
+      </FieldGroup>
+      <FieldGroup label="Dates">
+        <Field label="Start" type="date" value={sh.start} onChange={f("start")} />
+        <Field label="End" type="date" value={sh.end} onChange={f("end")} />
+        <Field label="Opening night" value={sh.opening_at} onChange={f("opening_at")} placeholder="2026-11-20T18:00" />
+      </FieldGroup>
+      <FieldGroup label="Hours">
+        <Field label="Open days" value={openDaysStr} onChange={setOpenDaysStr} placeholder="Tue,Wed,Thu,Fri,Sat" />
+        <Field label="Opens at" type="number" value={sh.open_from ?? ""} onChange={f("open_from")} placeholder="11" />
+        <Field label="Closes at" type="number" value={sh.open_to ?? ""} onChange={f("open_to")} placeholder="18" />
+        <Field label="Entry" value={sh.entry} onChange={f("entry")} placeholder="Free / ₹200" />
+      </FieldGroup>
+      <FieldGroup label="Details">
+        <TextAreaField label="About" value={sh.about} onChange={f("about")} placeholder="A short description of the show…" />
+        <TextAreaField label="Photo URLs" value={photosStr} onChange={setPhotosStr} placeholder="https://…, https://…" />
+        <Field label="Photo credit" value={sh.photo_credit} onChange={f("photo_credit")} />
+      </FieldGroup>
+      <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+        <AppleButton variant="ghost" onClick={onCancel}>Cancel</AppleButton>
+        <AppleButton onClick={save}>Save</AppleButton>
       </div>
     </div>
   );
@@ -218,24 +350,55 @@ function ShowForm({ initial, onSave, onCancel }: { initial: Show; onSave: (s: Sh
 function WalkForm({ initial, onSave, onCancel }: { initial: Walk; onSave: (w: Walk) => void; onCancel: () => void }) {
   const [w, setW] = useState(initial);
   const [stopsStr, setStopsStr] = useState(initial.stops.join(", "));
-  const f = (k: keyof Walk) => (e: React.ChangeEvent<HTMLInputElement>) => setW(p => ({ ...p, [k]: e.target.value }));
+  const f = (k: keyof Walk) => (v: string) => setW(p => ({ ...p, [k]: v }));
   const save = () => {
     if (!w.title) return alert("Title required");
     onSave({ ...w, id: w.id || slug(w.title), stops: arrField(stopsStr) });
   };
   return (
-    <div style={S.form}>
-      <div style={S.formTitle}>{w.id ? "Edit Walk" : "Add Walk"}</div>
-      <div style={S.grid2}>
-        <div><label style={S.label}>TITLE (English) *</label><input style={S.input} value={w.title} onChange={f("title")} /></div>
-        <div><label style={S.label}>TITLE (Hindi)</label><input style={S.input} value={w.title_hi} onChange={f("title_hi")} /></div>
+    <div style={{ background: T.surface, backdropFilter: T.blur, WebkitBackdropFilter: T.blur, borderRadius: 16, border: `1px solid ${T.border}`, padding: 20, marginBottom: 20 }}>
+      <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.02em", marginBottom: 20, color: T.text }}>{w.id ? "Edit Walk" : "New Walk"}</div>
+      <FieldGroup label="Walk Info">
+        <Field label="Title" value={w.title} onChange={f("title")} />
+        <Field label="Hindi title" value={w.title_hi} onChange={f("title_hi")} />
+      </FieldGroup>
+      <FieldGroup label="Stops">
+        <TextAreaField label="Event IDs in walking order" value={stopsStr} onChange={setStopsStr} placeholder="show-id-1, show-id-2, show-id-3" />
+      </FieldGroup>
+      <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+        <AppleButton variant="ghost" onClick={onCancel}>Cancel</AppleButton>
+        <AppleButton onClick={save}>Save</AppleButton>
       </div>
-      <div style={S.field}><label style={S.label}>STOPS — event IDs in walking order (comma separated)</label>
-        <textarea style={S.textarea} value={stopsStr} onChange={e => setStopsStr(e.target.value)} placeholder="show-id-1, show-id-2" />
+    </div>
+  );
+}
+
+// ── Row item ───────────────────────────────────────────────────────────────
+function ListRow({ title, sub, right, onEdit, onDelete, last }: {
+  title: string; sub?: string; right?: string;
+  onEdit: () => void; onDelete: () => void; last?: boolean;
+}) {
+  const [hover, setHover] = useState(false);
+  return (
+    <div
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        display: "flex", alignItems: "center", padding: "12px 16px",
+        borderBottom: last ? "none" : `1px solid ${T.separator}`,
+        background: hover ? "rgba(255,255,255,0.03)" : "transparent",
+        transition: "background 150ms ease",
+        gap: 12,
+      }}
+    >
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 15, color: T.text, letterSpacing: "-0.01em", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title}</div>
+        {sub && <div style={{ fontSize: 13, color: T.textSecondary, marginTop: 1 }}>{sub}</div>}
       </div>
-      <div style={S.formRow}>
-        <button style={btn("ghost")} onClick={onCancel}>Cancel</button>
-        <button style={btn("primary")} onClick={save}>Save Walk</button>
+      {right && <div style={{ fontSize: 13, color: T.textTertiary, flexShrink: 0 }}>{right}</div>}
+      <div style={{ display: "flex", gap: 6, flexShrink: 0, opacity: hover ? 1 : 0, transition: "opacity 150ms ease" }}>
+        <AppleButton variant="ghost" onClick={onEdit} style={{ padding: "5px 12px", fontSize: 13 }}>Edit</AppleButton>
+        <AppleButton variant="danger" onClick={onDelete} style={{ padding: "5px 12px", fontSize: 13 }}>Delete</AppleButton>
       </div>
     </div>
   );
@@ -252,9 +415,9 @@ export default function AdminPage() {
   const [showForm, setShowForm] = useState<Show | null>(null);
   const [galleryForm, setGalleryForm] = useState<Gallery | null>(null);
   const [walkForm, setWalkForm] = useState<Walk | null>(null);
-  const [msg, setMsg] = useState("");
+  const [toast, setToast] = useState("");
 
-  const flash = (m: string) => { setMsg(m); setTimeout(() => setMsg(""), 3000); };
+  const flash = (m: string) => { setToast(m); setTimeout(() => setToast(""), 2500); };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -279,7 +442,7 @@ export default function AdminPage() {
   const saveShow = async (sh: Show) => {
     const { error } = await sb.from("events").upsert(sh as any);
     if (error) return alert(error.message);
-    flash("Show saved ✓"); setShowForm(null); load();
+    flash("Show saved"); setShowForm(null); load();
   };
   const deleteShow = async (id: string) => {
     if (!confirm("Delete this show?")) return;
@@ -289,7 +452,7 @@ export default function AdminPage() {
   const saveGallery = async (g: Gallery) => {
     const { error } = await sb.from("galleries").upsert(g as any);
     if (error) return alert(error.message);
-    flash("Gallery saved ✓"); setGalleryForm(null); load();
+    flash("Gallery saved"); setGalleryForm(null); load();
   };
   const deleteGallery = async (id: string) => {
     if (!confirm("Delete this gallery?")) return;
@@ -299,7 +462,7 @@ export default function AdminPage() {
   const saveWalk = async (w: Walk) => {
     const { error } = await sb.from("walks").upsert(w as any);
     if (error) return alert(error.message);
-    flash("Walk saved ✓"); setWalkForm(null); load();
+    flash("Walk saved"); setWalkForm(null); load();
   };
   const deleteWalk = async (id: string) => {
     if (!confirm("Delete this walk?")) return;
@@ -307,126 +470,167 @@ export default function AdminPage() {
     flash("Deleted"); load();
   };
 
-  const empty = (cols: number, label: string) => (
-    <tr><td colSpan={cols} style={{ ...S.td, textAlign: "center", color: "#555", padding: 32 }}>No {label} yet. Add one above.</td></tr>
-  );
+  const tabs: { key: Tab; label: string; count: number }[] = [
+    { key: "shows", label: "Shows", count: shows.length },
+    { key: "galleries", label: "Galleries", count: galleries.length },
+    { key: "walks", label: "Walks", count: walks.length },
+  ];
 
   return (
-    <div style={S.page}>
-      <div style={S.header}>
-        <div style={S.logo}>THE ART WALK</div>
-        <span style={S.badge}>ADMIN · MAP</span>
-        {msg && <span style={{ marginLeft: "auto", color: C.gold, fontSize: 13 }}>{msg}</span>}
+    <div style={{ minHeight: "100vh", background: T.bg, color: T.text, fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif" }}>
+      <style>{`
+        * { box-sizing: border-box; }
+        input::placeholder, textarea::placeholder { color: rgba(255,255,255,0.28); }
+        input[type=number]::-webkit-inner-spin-button { opacity: 0; }
+        input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.5); }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes toastIn { from { opacity:0; transform:translateY(16px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
+      `}</style>
+
+      {/* Header — translucent material */}
+      <div style={{
+        position: "sticky", top: 0, zIndex: 100,
+        background: "rgba(0,0,0,0.75)",
+        backdropFilter: T.blur, WebkitBackdropFilter: T.blur,
+        borderBottom: `1px solid ${T.separator}`,
+      }}>
+        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 20px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 52 }}>
+            <div>
+              <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.1em", color: T.textSecondary, textTransform: "uppercase" }}>The Art Walk</span>
+              <span style={{ fontSize: 13, color: T.textTertiary, marginLeft: 6 }}>· Admin</span>
+            </div>
+            <div style={{ display: "flex", gap: 2, background: "rgba(255,255,255,0.07)", borderRadius: 10, padding: 2 }}>
+              {tabs.map(t => (
+                <button key={t.key} onClick={() => setTab(t.key)} style={{
+                  padding: "5px 14px", borderRadius: 8, border: "none", cursor: "pointer",
+                  fontSize: 13, fontWeight: 500, letterSpacing: "-0.01em",
+                  background: tab === t.key ? T.surfaceHigh : "transparent",
+                  color: tab === t.key ? T.text : T.textSecondary,
+                  transition: "all 150ms ease",
+                }}>
+                  {t.label}
+                  <span style={{ marginLeft: 5, fontSize: 11, color: tab === t.key ? T.gold : T.textTertiary, fontVariantNumeric: "tabular-nums" }}>
+                    {t.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div style={S.tabs}>
-        {(["shows", "galleries", "walks"] as Tab[]).map(t => (
-          <button key={t} style={tabStyle(tab === t)} onClick={() => setTab(t)}>
-            {t.toUpperCase()} ({t === "shows" ? shows.length : t === "galleries" ? galleries.length : walks.length})
-          </button>
-        ))}
-      </div>
-
-      <div style={S.body}>
-        {loading && <div style={{ color: C.muted, textAlign: "center", padding: 40 }}>Loading…</div>}
+      {/* Body */}
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 20px 60px" }}>
+        {loading && (
+          <div style={{ textAlign: "center", padding: 60, color: T.textTertiary, fontSize: 15 }}>Loading…</div>
+        )}
 
         {/* SHOWS */}
         {tab === "shows" && !loading && (
-          <>
-            <div style={S.row}>
-              <div style={S.h2}>Exhibitions &amp; Shows</div>
-              <button style={btn("primary")} onClick={() => setShowForm(blankShow())}>+ Add Show</button>
+          <div style={{ animation: "fadeUp 0.25s ease" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em" }}>Exhibitions</div>
+              <AppleButton variant="tinted" onClick={() => { setShowForm(blankShow()); }}>+ New Show</AppleButton>
             </div>
             {showForm && <ShowForm initial={showForm} onSave={saveShow} onCancel={() => setShowForm(null)} />}
-            <table style={S.table}>
-              <thead><tr>
-                <th style={S.th}>TITLE</th><th style={S.th}>GALLERY</th>
-                <th style={S.th}>AREA</th><th style={S.th}>ENDS</th>
-                <th style={S.th}>STATUS</th><th style={S.th}></th>
-              </tr></thead>
-              <tbody>
-                {shows.map(sh => (
-                  <tr key={sh.id}>
-                    <td style={S.td}><b>{sh.title}</b><br /><span style={{ color: C.muted, fontSize: 11 }}>{sh.artists.join(", ")}</span></td>
-                    <td style={S.td}>{sh.gallery}</td>
-                    <td style={S.td}>{sh.area}</td>
-                    <td style={{ ...S.td, color: "#888", fontSize: 12 }}>{sh.end || "—"}</td>
-                    <td style={S.td}><span style={pubBadge(sh.published)}>{sh.published ? "Live" : "Draft"}</span></td>
-                    <td style={{ ...S.td, textAlign: "right", whiteSpace: "nowrap" }}>
-                      <button style={{ ...btn("ghost"), marginRight: 6 }} onClick={() => setShowForm(sh)}>Edit</button>
-                      <button style={btn("danger")} onClick={() => deleteShow(sh.id)}>Delete</button>
-                    </td>
-                  </tr>
+            {shows.length === 0 && !showForm && (
+              <div style={{ textAlign: "center", padding: "48px 24px", background: T.surfaceHigh, borderRadius: 16, border: `1px solid ${T.border}`, color: T.textTertiary, fontSize: 15 }}>
+                No shows yet — add your first exhibition
+              </div>
+            )}
+            {shows.length > 0 && (
+              <div style={{ background: T.surfaceHigh, borderRadius: 16, border: `1px solid ${T.border}`, overflow: "hidden" }}>
+                {shows.map((sh, i) => (
+                  <ListRow key={sh.id}
+                    title={sh.title}
+                    sub={`${sh.gallery} · ${sh.area}${sh.artists.length ? " · " + sh.artists.slice(0, 2).join(", ") : ""}`}
+                    right={sh.end ? `until ${sh.end}` : undefined}
+                    onEdit={() => setShowForm(sh)}
+                    onDelete={() => deleteShow(sh.id)}
+                    last={i === shows.length - 1}
+                  />
                 ))}
-                {shows.length === 0 && empty(6, "shows")}
-              </tbody>
-            </table>
-          </>
+              </div>
+            )}
+          </div>
         )}
 
         {/* GALLERIES */}
         {tab === "galleries" && !loading && (
-          <>
-            <div style={S.row}>
-              <div style={S.h2}>Galleries</div>
-              <button style={btn("primary")} onClick={() => setGalleryForm(blankGallery())}>+ Add Gallery</button>
+          <div style={{ animation: "fadeUp 0.25s ease" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em" }}>Galleries</div>
+              <AppleButton variant="tinted" onClick={() => setGalleryForm(blankGallery())}>+ New Gallery</AppleButton>
             </div>
             {galleryForm && <GalleryForm initial={galleryForm} onSave={saveGallery} onCancel={() => setGalleryForm(null)} />}
-            <table style={S.table}>
-              <thead><tr>
-                <th style={S.th}>NAME</th><th style={S.th}>AREA</th>
-                <th style={S.th}>COORDINATES</th><th style={S.th}>STATUS</th><th style={S.th}></th>
-              </tr></thead>
-              <tbody>
-                {galleries.map(g => (
-                  <tr key={g.id}>
-                    <td style={S.td}><b>{g.name}</b><br /><span style={{ color: C.muted, fontSize: 11 }}>{g.instagram}</span></td>
-                    <td style={S.td}>{g.area}</td>
-                    <td style={{ ...S.td, color: "#888", fontSize: 12 }}>{g.lat}, {g.lng}</td>
-                    <td style={S.td}><span style={pubBadge(g.published)}>{g.published ? "Live" : "Draft"}</span></td>
-                    <td style={{ ...S.td, textAlign: "right", whiteSpace: "nowrap" }}>
-                      <button style={{ ...btn("ghost"), marginRight: 6 }} onClick={() => setGalleryForm(g)}>Edit</button>
-                      <button style={btn("danger")} onClick={() => deleteGallery(g.id)}>Delete</button>
-                    </td>
-                  </tr>
+            {galleries.length === 0 && !galleryForm && (
+              <div style={{ textAlign: "center", padding: "48px 24px", background: T.surfaceHigh, borderRadius: 16, border: `1px solid ${T.border}`, color: T.textTertiary, fontSize: 15 }}>
+                No galleries yet
+              </div>
+            )}
+            {galleries.length > 0 && (
+              <div style={{ background: T.surfaceHigh, borderRadius: 16, border: `1px solid ${T.border}`, overflow: "hidden" }}>
+                {galleries.map((g, i) => (
+                  <ListRow key={g.id}
+                    title={g.name}
+                    sub={`${g.area}${g.instagram ? " · " + g.instagram : ""}`}
+                    right={`${g.lat.toFixed(3)}, ${g.lng.toFixed(3)}`}
+                    onEdit={() => setGalleryForm(g)}
+                    onDelete={() => deleteGallery(g.id)}
+                    last={i === galleries.length - 1}
+                  />
                 ))}
-                {galleries.length === 0 && empty(5, "galleries")}
-              </tbody>
-            </table>
-          </>
+              </div>
+            )}
+          </div>
         )}
 
         {/* WALKS */}
         {tab === "walks" && !loading && (
-          <>
-            <div style={S.row}>
-              <div style={S.h2}>Curated Walks</div>
-              <button style={btn("primary")} onClick={() => setWalkForm(blankWalk())}>+ Add Walk</button>
+          <div style={{ animation: "fadeUp 0.25s ease" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em" }}>Walks</div>
+              <AppleButton variant="tinted" onClick={() => setWalkForm(blankWalk())}>+ New Walk</AppleButton>
             </div>
             {walkForm && <WalkForm initial={walkForm} onSave={saveWalk} onCancel={() => setWalkForm(null)} />}
-            <table style={S.table}>
-              <thead><tr>
-                <th style={S.th}>TITLE</th><th style={S.th}>STOPS</th>
-                <th style={S.th}>STATUS</th><th style={S.th}></th>
-              </tr></thead>
-              <tbody>
-                {walks.map(w => (
-                  <tr key={w.id}>
-                    <td style={S.td}><b>{w.title}</b><br /><span style={{ color: C.muted, fontSize: 11 }}>{w.title_hi}</span></td>
-                    <td style={{ ...S.td, color: "#888", fontSize: 12 }}>{w.stops.length} stops</td>
-                    <td style={S.td}><span style={pubBadge(w.published)}>{w.published ? "Live" : "Draft"}</span></td>
-                    <td style={{ ...S.td, textAlign: "right", whiteSpace: "nowrap" }}>
-                      <button style={{ ...btn("ghost"), marginRight: 6 }} onClick={() => setWalkForm(w)}>Edit</button>
-                      <button style={btn("danger")} onClick={() => deleteWalk(w.id)}>Delete</button>
-                    </td>
-                  </tr>
+            {walks.length === 0 && !walkForm && (
+              <div style={{ textAlign: "center", padding: "48px 24px", background: T.surfaceHigh, borderRadius: 16, border: `1px solid ${T.border}`, color: T.textTertiary, fontSize: 15 }}>
+                No walks yet
+              </div>
+            )}
+            {walks.length > 0 && (
+              <div style={{ background: T.surfaceHigh, borderRadius: 16, border: `1px solid ${T.border}`, overflow: "hidden" }}>
+                {walks.map((w, i) => (
+                  <ListRow key={w.id}
+                    title={w.title}
+                    sub={w.title_hi || undefined}
+                    right={`${w.stops.length} stops`}
+                    onEdit={() => setWalkForm(w)}
+                    onDelete={() => deleteWalk(w.id)}
+                    last={i === walks.length - 1}
+                  />
                 ))}
-                {walks.length === 0 && empty(4, "walks")}
-              </tbody>
-            </table>
-          </>
+              </div>
+            )}
+          </div>
         )}
       </div>
+
+      {/* Toast */}
+      {toast && (
+        <div style={{
+          position: "fixed", bottom: 32, left: "50%", transform: "translateX(-50%)",
+          background: "rgba(44,44,46,0.95)", backdropFilter: T.blur, WebkitBackdropFilter: T.blur,
+          border: `1px solid ${T.borderStrong}`, borderRadius: 20,
+          padding: "10px 20px", fontSize: 14, fontWeight: 500, color: T.text,
+          boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+          animation: "toastIn 0.25s ease",
+          zIndex: 999, whiteSpace: "nowrap",
+        }}>
+          {toast}
+        </div>
+      )}
     </div>
   );
 }
