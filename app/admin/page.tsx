@@ -57,19 +57,19 @@ const css = (obj: CSSProperties): CSSProperties => obj;
 
 // ── Apple-inspired design tokens ──────────────────────────────────────────
 const T = {
-  gold: "#c8a96a",
-  bg: "#000",
-  surface: "rgba(28,28,30,0.95)",
-  surfaceHigh: "rgba(44,44,46,0.9)",
-  surfaceInput: "rgba(58,58,60,0.8)",
-  border: "rgba(255,255,255,0.08)",
-  borderStrong: "rgba(255,255,255,0.14)",
-  text: "#ffffff",
-  textSecondary: "rgba(255,255,255,0.55)",
-  textTertiary: "rgba(255,255,255,0.3)",
-  separator: "rgba(255,255,255,0.08)",
-  red: "#ff453a",
-  green: "#30d158",
+  gold: "#b8892e",
+  bg: "#f2f2f7",
+  surface: "rgba(255,255,255,0.92)",
+  surfaceHigh: "rgba(255,255,255,1)",
+  surfaceInput: "rgba(118,118,128,0.08)",
+  border: "rgba(0,0,0,0.08)",
+  borderStrong: "rgba(0,0,0,0.14)",
+  text: "#000000",
+  textSecondary: "rgba(0,0,0,0.5)",
+  textTertiary: "rgba(0,0,0,0.25)",
+  separator: "rgba(0,0,0,0.07)",
+  red: "#ff3b30",
+  green: "#34c759",
   blur: "blur(24px) saturate(180%)",
 };
 
@@ -218,7 +218,7 @@ function Login({ onLogin }: { onLogin: () => void }) {
     <div style={{ minHeight: "100vh", background: T.bg, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif" }}>
       <style>{`
         @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(6px)} }
-        input::placeholder { color: rgba(255,255,255,0.3); }
+        input::placeholder { color: rgba(0,0,0,0.3); }
         input[type=password]::-ms-reveal { display: none; }
       `}</style>
       <div style={{
@@ -240,7 +240,7 @@ function Login({ onLogin }: { onLogin: () => void }) {
           style={{
             ...baseInput, marginBottom: 12,
             textAlign: "center",
-            background: "rgba(255,255,255,0.07)",
+            background: "rgba(118,118,128,0.12)",
           }}
         />
         {err && <div style={{ textAlign: "center", color: T.red, fontSize: 13, marginBottom: 12 }}>{err}</div>}
@@ -480,9 +480,9 @@ export default function AdminPage() {
     <div style={{ minHeight: "100vh", background: T.bg, color: T.text, fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif" }}>
       <style>{`
         * { box-sizing: border-box; }
-        input::placeholder, textarea::placeholder { color: rgba(255,255,255,0.28); }
+        input::placeholder, textarea::placeholder { color: rgba(0,0,0,0.25); }
         input[type=number]::-webkit-inner-spin-button { opacity: 0; }
-        input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.5); }
+        input[type=date]::-webkit-calendar-picker-indicator { filter: none; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
         @keyframes toastIn { from { opacity:0; transform:translateY(16px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
       `}</style>
@@ -490,7 +490,7 @@ export default function AdminPage() {
       {/* Header — translucent material */}
       <div style={{
         position: "sticky", top: 0, zIndex: 100,
-        background: "rgba(0,0,0,0.75)",
+        background: "rgba(242,242,247,0.85)",
         backdropFilter: T.blur, WebkitBackdropFilter: T.blur,
         borderBottom: `1px solid ${T.separator}`,
       }}>
@@ -500,7 +500,7 @@ export default function AdminPage() {
               <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.1em", color: T.textSecondary, textTransform: "uppercase" }}>The Art Walk</span>
               <span style={{ fontSize: 13, color: T.textTertiary, marginLeft: 6 }}>· Admin</span>
             </div>
-            <div style={{ display: "flex", gap: 2, background: "rgba(255,255,255,0.07)", borderRadius: 10, padding: 2 }}>
+            <div style={{ display: "flex", gap: 2, background: "rgba(118,118,128,0.12)", borderRadius: 10, padding: 2 }}>
               {tabs.map(t => (
                 <button key={t.key} onClick={() => setTab(t.key)} style={{
                   padding: "5px 14px", borderRadius: 8, border: "none", cursor: "pointer",
@@ -621,7 +621,7 @@ export default function AdminPage() {
       {toast && (
         <div style={{
           position: "fixed", bottom: 32, left: "50%", transform: "translateX(-50%)",
-          background: "rgba(44,44,46,0.95)", backdropFilter: T.blur, WebkitBackdropFilter: T.blur,
+          background: "rgba(255,255,255,0.95)", backdropFilter: T.blur, WebkitBackdropFilter: T.blur,
           border: `1px solid ${T.borderStrong}`, borderRadius: 20,
           padding: "10px 20px", fontSize: 14, fontWeight: 500, color: T.text,
           boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
